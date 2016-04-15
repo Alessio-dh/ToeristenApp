@@ -15,6 +15,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using System.Net.Http;
+using Newtonsoft.Json;
+using Windows.Devices.Geolocation;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkID=390556
 
@@ -67,7 +70,7 @@ namespace ToeristenApp
         /// session.  The state will be null the first time a page is visited.</param>
         private void NavigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-        }
+    }
 
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
@@ -96,9 +99,23 @@ namespace ToeristenApp
         /// </summary>
         /// <param name="e">Provides data for navigation methods and event
         /// handlers that cannot cancel the navigation request.</param>
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             this.navigationHelper.OnNavigatedTo(e);
+
+            base.OnNavigatedTo(e);
+            Geolocator geolocator = new Geolocator();
+            Geoposition position = await geolocator.GetGeopositionAsync();
+            lat.Text = position.Coordinate.Point.Position.Latitude.ToString();
+            lon.Text = position.Coordinate.Point.Position.Longitude.ToString();
+            string typeOfPlace = "hospital";
+
+            string httpheader = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + "50.98706999999999," + "5.367160000000013" + "&radius=500&types="+typeOfPlace+"&key=AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c";
+
+            var client = new HttpClient();
+            var result = await client.GetStringAsync(httpheader);
+            var placesList = JsonConvert.DeserializeObject<RootObject>(result);
+            placesListView.ItemsSource = placesList.results;
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -106,6 +123,36 @@ namespace ToeristenApp
             this.navigationHelper.OnNavigatedFrom(e);
         }
 
+        public class Location
+        {
+            public double lat { get; set; }
+            public double lng { get; set; }
+        }
+
+        public class Geometry
+        {
+            public Location location { get; set; }
+        }
+
+        public class Result
+        {
+            public Geometry geometry { get; set; }
+            public string icon { get; set; }
+            public string id { get; set; }
+            public string name { get; set; }
+            public string place_id { get; set; }
+            public string reference { get; set; }
+            public string scope { get; set; }
+            public List<string> types { get; set; }
+            public string vicinity { get; set; }
+        }
+
+        public class RootObject
+        {
+            public List<object> html_attributions { get; set; }
+            public List<Result> results { get; set; }
+            public string status { get; set; }
+        }
         #endregion
     }
 }

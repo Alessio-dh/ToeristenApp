@@ -30,17 +30,22 @@
 
         <!--TODO: Content should be placed within the following grid-->
         <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,9.5,19,0">
-            <Microsoft_Phone_Controls_Maps:Map 
-Name="MyMap" 
-Grid.Column="1" 
-LogoVisibility="Collapsed" 
-d:LayoutOverrides="GridBox" 
-           MapAppScope:BindingHelpers.TileSource="{Binding GoogleMap}"
-            Margin="0,0,0,2">
-                <Microsoft_Phone_Controls_Maps:Map.Mode>
-                    <MSPCMCore:MercatorMode/>
-                </Microsoft_Phone_Controls_Maps:Map.Mode>
-            </Microsoft_Phone_Controls_Maps:Map>
+            <!--AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c   GOOGLE PLACES API KEY-->
+
+            <ListView x:Name="placesListView">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="{Binding name}" FontSize="25" Height="150" />
+                            <TextBlock Text="{Binding geometry.latitude.lat}" FontSize="25" Margin="0,0,0,10" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            
+            <TextBox Name="lat"/>
+            <TextBox Name="lon" Margin="0,112,0,0"/>
         </Grid>
     </Grid>
 </Page>
+  
