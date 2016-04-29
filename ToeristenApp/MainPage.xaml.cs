@@ -16,8 +16,11 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Net.Http;
-using Newtonsoft.Json;
 using Windows.Devices.Geolocation;
+using Windows.UI.Xaml.Controls.Maps;
+using Windows.Storage.Streams;
+using Windows.UI.Popups;
+using System.Xml.Linq;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkID=390556
 
@@ -70,7 +73,7 @@ namespace ToeristenApp
         /// session.  The state will be null the first time a page is visited.</param>
         private void NavigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-    }
+        }
 
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
@@ -105,17 +108,19 @@ namespace ToeristenApp
 
             base.OnNavigatedTo(e);
             Geolocator geolocator = new Geolocator();
-            Geoposition position = await geolocator.GetGeopositionAsync();
-            lat.Text = position.Coordinate.Point.Position.Latitude.ToString();
-            lon.Text = position.Coordinate.Point.Position.Longitude.ToString();
-            string typeOfPlace = "hospital";
+            if (geolocator.LocationStatus == PositionStatus.Disabled)       //Check if the location settings are turned on and if the cellphone has gps available
+            {
+                MessageDialog dialog = new MessageDialog("There is no location available is your location aebled? Do you have GPS?", "No Location services");
+                dialog.Commands.Add(new UICommand("Settings", new UICommandInvokedHandler(CommandHandler)));
+                dialog.Commands.Add(new UICommand("Exit", new UICommandInvokedHandler(CommandHandler)));
+                await dialog.ShowAsync();
+            }
+            else
+            {
+                Geoposition position = await geolocator.GetGeopositionAsync();
+                getPlaces("hospital");
+            }
 
-            string httpheader = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + "50.98706999999999," + "5.367160000000013" + "&radius=500&types="+typeOfPlace+"&key=AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c";
-
-            var client = new HttpClient();
-            var result = await client.GetStringAsync(httpheader);
-            var placesList = JsonConvert.DeserializeObject<RootObject>(result);
-            placesListView.ItemsSource = placesList.results;
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -123,6 +128,78 @@ namespace ToeristenApp
             this.navigationHelper.OnNavigatedFrom(e);
         }
 
+        public async void getPlaces(string typeofplace)
+        {
+            string httpheader = "https://maps.googleapis.com/maps/api/place/nearbysearch/xml?location=" + "50.98706999999999," + "5.367160000000013" + "&radius=50000&types=" + typeofplace + "&key=AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c";
+
+            var client = new HttpClient();
+            var result = await client.GetStringAsync(httpheader);
+            XElement placesList = XElement.Parse(result);
+            addPushPin(placesList);
+        }
+
+        public void addPushPin(XElement result)
+        {
+            //int count = result.results.Count();
+
+            //if (result.status=="OK")
+            //{
+            //    for (int i = 0; i <= count; i++)
+            //    {
+            //        
+            //    }
+            //}
+
+            BasicGeoposition position1 = new BasicGeoposition();        //TEST CODE FOR PUSHPINS
+            position1.Latitude = 45.8080;
+            position1.Longitude = 9.0800;
+            Geopoint geopoint1 = new Geopoint(position1);
+            PushPin pushpin1 = new PushPin();
+            pushpin1.Name = "Pub";
+            pushpin1.Location = geopoint1;
+            BasicGeoposition position2 = new BasicGeoposition();
+            position2.Latitude = 45.8052;
+            position2.Longitude = 9.0825;
+            Geopoint geopoint2 = new Geopoint(position2);
+            PushPin pushpin2 = new PushPin();
+            pushpin2.Name = "Bank";
+            pushpin2.Location = geopoint2;
+            List<PushPin> pushpins = new List<PushPin>();
+            pushpins.Add(pushpin1);
+            pushpins.Add(pushpin2);
+            Pushpins.ItemsSource = pushpins;
+
+        }
+
+        private async void OnAddPushpinClicked(object sender, RoutedEventArgs e)
+        {
+            Border border = sender as Border;
+            PushPin selectedPushpin = border.DataContext as PushPin;
+            MessageDialog dialog = new MessageDialog("This Is a place ");
+            await dialog.ShowAsync();
+
+        }
+
+        private async void CommandHandler(IUICommand command)       //Handle what button would do what 
+        {
+            var commandlabel = command.Label;
+            switch (commandlabel)
+            {
+                case "Settings":
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings-location:"));     //go to settings page of the cellphone itself
+                    break;
+                case "Exit":
+                    Application.Current.Exit();         //exit the application completely
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public class ItemPosition
+        {
+            public int MyProperty { get; set; }
+        }
         public class Location
         {
             public double lat { get; set; }
@@ -133,26 +210,14 @@ namespace ToeristenApp
         {
             public Location location { get; set; }
         }
-
-        public class Result
+   
+        public class PushPin
         {
-            public Geometry geometry { get; set; }
-            public string icon { get; set; }
-            public string id { get; set; }
-            public string name { get; set; }
-            public string place_id { get; set; }
-            public string reference { get; set; }
-            public string scope { get; set; }
-            public List<string> types { get; set; }
-            public string vicinity { get; set; }
+            public string Name { get; set; }
+            public Geopoint Location { get; set; }
         }
 
-        public class RootObject
-        {
-            public List<object> html_attributions { get; set; }
-            public List<Result> results { get; set; }
-            public string status { get; set; }
-        }
+
         #endregion
     }
 }

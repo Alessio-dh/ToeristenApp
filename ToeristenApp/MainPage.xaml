@@ -25,14 +25,14 @@
         <!-- Title Panel -->
         <StackPanel Grid.Row="0" Margin="19,0,0,0">
             <TextBlock Text="TOERISTEN APP" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,12,0,0"/>
-            <TextBlock Text="wegvinder" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
+            <TextBlock Text="toeristen app" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
         </StackPanel>
 
         <!--TODO: Content should be placed within the following grid-->
         <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,9.5,19,0">
             <!--AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c   GOOGLE PLACES API KEY-->
 
-            <ListView x:Name="placesListView">
+            <!--<ListView x:Name="placesListView">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Vertical">
@@ -41,10 +41,21 @@
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
-            </ListView>
-            
-            <TextBox Name="lat"/>
-            <TextBox Name="lon" Margin="0,112,0,0"/>
+            </ListView>-->
+
+            <maps:MapControl x:Name="MyMap">
+                <maps:MapItemsControl x:Name="Pushpins">
+                    <maps:MapItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="CornflowerBlue" Tapped="OnAddPushpinClicked">
+                                <TextBlock Text="{Binding Name}" Foreground="Black"
+                                    maps:MapControl.Location="{Binding Location}"
+                                    Style="{StaticResource TitleTextBlockStyle}" />
+                            </Border>
+                        </DataTemplate>
+                    </maps:MapItemsControl.ItemTemplate>
+                </maps:MapItemsControl>
+            </maps:MapControl>
         </Grid>
     </Grid>
 </Page>
