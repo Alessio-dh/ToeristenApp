@@ -82,20 +82,20 @@ namespace ToeristenApp
             Geolocator geolocator = new Geolocator();
             if (geolocator.LocationStatus == PositionStatus.Disabled)       //Check if the location settings are turned on and if the cellphone has gps available
             {
-                MessageDialog dialog = new MessageDialog("There is no location available is your location aebled? Do you have GPS?", "No Location services");
+                MessageDialog dialog = new MessageDialog("There is no location available is your location enabled? Do you have GPS?", "No Location services");
                 dialog.Commands.Add(new UICommand("Settings", new UICommandInvokedHandler(CommandHandler)));
                 dialog.Commands.Add(new UICommand("Exit", new UICommandInvokedHandler(CommandHandler)));
                 await dialog.ShowAsync();
             }
             else
             {
-                string[] TypesOfPlaces = new string[1] { "hospital" }; //"airport", "atm","car-repair","city_hall","embassy","gas_station","pharmacy","lawyer"
+                string[] TypesOfPlaces = new string[9] { "hospital", "airport", "atm", "car-repair", "city_hall", "embassy", "gas_station", "pharmacy", "lawyer" }; //"airport", "atm","car-repair","city_hall","embassy","gas_station","pharmacy","lawyer"
 
                 Geoposition position = await geolocator.GetGeopositionAsync();
                 BasicGeoposition basicgeo = new BasicGeoposition();
                 basicgeo.Latitude = position.Coordinate.Latitude;
                 basicgeo.Longitude = position.Coordinate.Longitude;
-                MyMap.ZoomLevel = 7;
+                MyMap.ZoomLevel = 10;
 
                 Geopoint positionpoint = new Geopoint(basicgeo);
                 MyMap.Center = positionpoint;
@@ -140,16 +140,16 @@ namespace ToeristenApp
             this.navigationHelper.OnNavigatedFrom(e);
         }
 
-        public async void getPlaces(string[] TypesOfPlaces, double lat , double lon)
+        public async void getPlaces(string[] TypesOfPlaces, double lat, double lon)
         {
-            for (int i = 0; i < TypesOfPlaces.Length; i++)
+            for (int i=0; i < TypesOfPlaces.Length; i++)
             {
                 string httpheader = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + lat + "," + lon + "&radius=10000&types=" + TypesOfPlaces[i] + "&key=AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c";
 
                 var client = new HttpClient();
                 var result = await client.GetStringAsync(httpheader);
                 GooglePlacesResponse gpr = (GooglePlacesResponse)JsonConvert.DeserializeObject<GooglePlacesResponse>(result);
-                addPushPin(gpr);       
+                addPushPin(gpr);
             }
         }
 
@@ -158,44 +158,34 @@ namespace ToeristenApp
             int count = response.results.Length;
 
             BasicGeoposition positiontest = new BasicGeoposition();     //test for json results
-            //PushPin pushpin1 = new PushPin();
-            Geopoint geopoint1 = new Geopoint(positiontest); 
 
             if (response.status == "OK")
             {
                 for (int i = 0; i < count; i++)
                 {
-                    PushPin pushpin1 = new PushPin();
+                    PushPin pushpin1 = new PushPin();      
                     string name = response.results[i].name;
                     positiontest.Latitude = response.results[i].geometry.location.lat;
-                    positiontest.Latitude = response.results[i].geometry.location.lng;
+                    positiontest.Longitude = response.results[i].geometry.location.lng;
+                    Geopoint geopoint1 = new Geopoint(positiontest);
                     AddPushPinOnMap(pushpin1, response, name, count, i, geopoint1);
-
                 }             
-                //Pushpins.Items.Clear();
             }
-
-            //pushpin1.Name = "Pub";
-            //pushpin1.Location = geopoint1;
-            //BasicGeoposition position2 = new BasicGeoposition();
-            //position2.Latitude = 45.8052;
-            //position2.Longitude = 9.0825;
-            //Geopoint geopoint2 = new Geopoint(position2);
-            //PushPin pushpin2 = new PushPin();
-            //pushpin2.Name = "Bank";
-            //pushpin2.Location = geopoint2;
-            //pushpins.Add(pushpin1);
-            //pushpins.Add(pushpin2);
-            //Pushpins.ItemsSource = pushpins;
-
         }
 
         public void AddPushPinOnMap(PushPin pushpin, GooglePlacesResponse response,string name,int max,int count,Geopoint geopoint)
         {
             pushpin.Name = name;
             pushpin.Location = geopoint;
-            
-            if (max==count)
+            int controlMax = max - 1;
+            pushpins.Add(pushpin);
+            //MapIcon icon = new MapIcon();
+            //icon.Location = geopoint;
+            //icon.Title = name;
+            //icon.Image = RandomAccessStreamReference.CreateFromUri(new Uri("msappx:///Assets/logo.jpg"));
+            //MyMap.MapElements.Add(icon);
+
+            if (controlMax==count)
             {
                 Pushpins.ItemsSource = pushpins;
             } 
@@ -205,7 +195,7 @@ namespace ToeristenApp
         {
             Border border = sender as Border;
             PushPin selectedPushpin = border.DataContext as PushPin;
-            MessageDialog dialog = new MessageDialog("This Is a place ");
+            MessageDialog dialog = new MessageDialog(selectedPushpin.Name);
             await dialog.ShowAsync();
 
         }
