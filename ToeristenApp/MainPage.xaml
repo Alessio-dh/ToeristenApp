@@ -28,30 +28,22 @@
             <TextBlock Text="toeristen app" Margin="0,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
         </StackPanel>
 
-        <!--TODO: Content should be placed within the following grid-->
-        <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,9.5,19,0">
-            <!--AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c   GOOGLE PLACES API KEY-->
 
-            <!--<ListView x:Name="placesListView">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="{Binding name}" FontSize="25" Height="150" />
-                            <TextBlock Text="{Binding geometry.latitude.lat}" FontSize="25" Margin="0,0,0,10" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>-->
+        <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,9.5,19,0">
 
             <maps:MapControl x:Name="MyMap">
                 <maps:MapItemsControl x:Name="Pushpins">
                     <maps:MapItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="CornflowerBlue" Tapped="OnAddPushpinClicked">
+                            <!--<Border Background="CornflowerBlue" Tapped="OnAddPushpinClicked">
                                 <TextBlock Text="{Binding Name}" Foreground="Black"
                                     maps:MapControl.Location="{Binding Location}"
                                     Style="{StaticResource TitleTextBlockStyle}" />
-                            </Border>
+                            </Border>-->
+
+                            <!--<BitmapIcon maps:MapControl.Location="{Binding pushpin}" 
+                                   Tapped="OnAddPushpinClicked"  
+                                   Width="50" />-->
                         </DataTemplate>
                     </maps:MapItemsControl.ItemTemplate>
                 </maps:MapItemsControl>
