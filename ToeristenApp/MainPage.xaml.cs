@@ -100,6 +100,7 @@ namespace ToeristenApp
                     basicgeo.Longitude = position.Coordinate.Longitude;
                     MyMap.ZoomLevel = 13;
 
+
                     Geopoint positionpoint = new Geopoint(basicgeo);
                     MyMap.Center = positionpoint;
                     getPlaces(TypesOfPlaces, positionpoint.Position.Latitude, positionpoint.Position.Longitude);
@@ -145,6 +146,8 @@ namespace ToeristenApp
 
         public async void getPlaces(string[] TypesOfPlaces, double lat, double lon)
         {
+            AmountOfResults AmountFound = new AmountOfResults();
+
             for (int i=0; i < TypesOfPlaces.Length; i++)
             {
                 string httpheader = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + lat + "," + lon + "&radius=10000&types=" + TypesOfPlaces[i] + "&key=AIzaSyDGGzD_RjFpH8HyUMjYq29j6wj4o0tSw9c";
@@ -172,9 +175,11 @@ namespace ToeristenApp
                 {
                     Pushpins.ItemsSource = pushpins;
                 }
-                
 
+                AmountFound.Amount += gpr.results.Length;
             }
+
+            ResultsAmount.Text = Convert.ToString(AmountFound.Amount) + " RESULTS FOUND";
         }
 
         public void AddPushPinOnMap(PushPin pushpin, GooglePlacesResponse response,string name,int max,int count,Geopoint geopoint)
@@ -186,16 +191,6 @@ namespace ToeristenApp
             icon.Image = RandomAccessStreamReference.CreateFromUri(uri);
             MyMap.MapElements.Add(icon);
         }
-
-
-        //private async void OnAddPushpinClicked(object sender, RoutedEventArgs e)
-        //{
-        //    BitmapIcon border = sender as BitmapIcon;
-        //    PushPin selectedPushpin = border.DataContext as PushPin;
-        //    MessageDialog dialog = new MessageDialog(selectedPushpin.Name);
-        //    await dialog.ShowAsync();
-
-        //}
 
         private async void CommandHandlerLocation(IUICommand command)       //Handle what button would do what 
         {
@@ -214,44 +209,21 @@ namespace ToeristenApp
             }
         }
 
-        //---------------------------------------------------------CLASSES RIGHT NOW-----------------------------------------------------------------------------------------
+        private async void button_Click(object sender, RoutedEventArgs e)
+        {
+            Geolocator geolocator = new Geolocator();
+            string[] TypesOfPlaces = new string[9] { "hospital", "airport", "atm", "car-repair", "city_hall", "embassy", "gas_station", "pharmacy", "lawyer" };
 
-        public class ItemPosition
-        {
-            public int MyProperty { get; set; }
-        }
-        public class Location
-        {
-            public double lat { get; set; }
-            public double lng { get; set; }
-        }
+            Geoposition position = await geolocator.GetGeopositionAsync();
+            BasicGeoposition basicgeo = new BasicGeoposition();
+            basicgeo.Latitude = position.Coordinate.Latitude;
+            basicgeo.Longitude = position.Coordinate.Longitude;
+            MyMap.ZoomLevel = 13;
 
-        public class Geometry
-        {
-            public Location location { get; set; }
+            Geopoint positionpoint = new Geopoint(basicgeo);
+            MyMap.Center = positionpoint;
+            getPlaces(TypesOfPlaces, positionpoint.Position.Latitude, positionpoint.Position.Longitude);
         }
-   
-        public class PushPin
-        {
-            public string Name { get; set; }
-            public Geopoint Location { get; set; }
-        }
-
-        public class GooglePlacesResponse
-        {
-            public string status { get; set; }
-            public results[] results { get; set; }
-        }
-
-        public class results
-        {
-            public Geometry geometry { get; set; }
-            public string name { get; set; }
-            public string reference { get; set; }
-            public string vicinity { get; set; }
-            public string icon { get; set; }
-        }
-
-        #endregion
     }
 }
+#endregion
